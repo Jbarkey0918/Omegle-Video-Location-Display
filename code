@@ -1,0 +1,31 @@
+(function() {
+    'use strict';
+
+    function getLocation(ip) {
+        GM_xmlhttpRequest({
+            method: "GET",
+            url: `https://api.ipgeolocation.io/ipgeo?apiKey=1bb22ea402bd49cf9f1882c010d96f4d&ip=${ip}`,
+            onload: function(response) {
+                const data = JSON.parse(response.responseText);
+                const location = `${data.city}, ${data.state_prov}, ${data.country_name}`;
+                document.querySelector("#chattext").value = `Other user's location: ${location}\n` + document.querySelector("#chattext").value;
+            }
+        });
+    }
+
+    const observer = new MutationObserver(function (mutations) {
+        mutations.forEach(function (mutation) {
+            if (mutation.type === "childList") {
+                const newUser = mutation.addedNodes[0];
+                if (newUser && newUser.classList.contains("yourehidden")) {
+                    const ip = newUser.innerText.split(" ")[0];
+                    getLocation(ip);
+                }
+            }
+        });
+    });
+
+    observer.observe(document.querySelector("#spyConsole"), {
+        childList: true
+    });
+})();
